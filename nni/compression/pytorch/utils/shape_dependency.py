@@ -9,9 +9,9 @@ __all__ = ['ChannelDependency', 'GroupDependency',
 
 CONV_TYPE = 'aten::_convolution'
 ADD_TYPES = ['aten::add', 'aten::add_']
-CAT_TYPE = 'aten::cat'
+CAT_TYPE = ['aten::cat', 'Concat']
 logger = logging.getLogger('Shape_Dependency')
-RESHAPE_OPS = [CAT_TYPE, 'aten::view',
+RESHAPE_OPS = ['aten::cat', 'Concat', 'aten::view',
                'aten::reshape', 'aten::flatten', 'aten::mean']
 
 
@@ -100,7 +100,7 @@ class ChannelDependency(Dependency):
             # or aten::cat operations
             if node.op_type in ADD_TYPES:
                 parent_layers = self._get_parent_layers(node)
-            elif node.op_type == CAT_TYPE:
+            elif node.op_type in CAT_TYPE:
                 # To determine if this cat operation will introduce channel
                 # dependency, we need the specific input parameters of the cat
                 # opertion. To get the input parameters of the cat opertion, we
@@ -110,7 +110,7 @@ class ChannelDependency(Dependency):
                 # NodepyGroup.
                 cat_dim = None
                 for cnode in node.node_cpps:
-                    if cnode.kind() == CAT_TYPE:
+                    if cnode.kind() in CAT_TYPE:
                         cat_dim = list(cnode.inputs())[1].toIValue()
                         break
                 if cat_dim != 1:
@@ -311,7 +311,7 @@ class CatPaddingDependency(ChannelDependency):
         """
         for node in self.graph.nodes_py.nodes_op:
             parent_layers = []
-            if node.op_type == CAT_TYPE:
+            if node.op_type in CAT_TYPE:
                 parent_layers = self._get_parent_layers(node)
                 dependency_set = set(parent_layers)
                 # merge the dependencies
