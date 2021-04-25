@@ -20,7 +20,8 @@ replace_module = {
     'Linear': lambda module, mask: replace_linear(module, mask),
     'Dropout': lambda module, mask: no_replace(module, mask),
     'Dropout2d': lambda module, mask: no_replace(module, mask),
-    'Dropout3d': lambda module, mask: no_replace(module, mask)
+    'Dropout3d': lambda module, mask: no_replace(module, mask),
+    'Upsample': lambda module, mask: no_replace(module, mask)
 }
 
 
