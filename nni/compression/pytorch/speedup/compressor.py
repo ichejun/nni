@@ -94,7 +94,7 @@ class ModelSpeedup:
                 output_cmask = infer_from_inshape[m_type](module_masks,
                                                           in_shape,
                                                           self.torch_graph.name_to_node[module_name].auxiliary)
-            elif m_type in ['aten::cat']:
+            elif m_type in ['aten::cat', 'Concat']:
                 # To calculate the mask for concat operation, the output shape
                 # , cat dimension, and the order of the input parameters.
                 output_cmask = infer_from_inshape[m_type](module_masks,
@@ -155,6 +155,8 @@ class ModelSpeedup:
             if g_node.type == 'module':
                 super_module, leaf_module = get_module_by_name(self.bound_model, g_node.name)
                 m_type = g_node.op_type
+                if m_type == 'aten::cat':
+                    continue
                 if not m_type in replace_module:
                     raise RuntimeError("Has not supported replacing the module: `{}`".format(m_type))
                 _logger.info("replace module (name: %s, op_type: %s)", g_node.name, m_type)
