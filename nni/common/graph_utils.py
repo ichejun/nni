@@ -10,7 +10,7 @@ import torch
 from torch.utils.tensorboard._pytorch_graph import NodePy, NodePyIO, NodePyOP, GraphPy
 CLASSTYPE_KIND = 'ClassType'
 GETATTR_KIND = 'prim::GetAttr'
-CAT_KIND = 'aten::cat'
+CAT_KIND = ['aten::cat', 'Concat']
 LIST_CONSTRUCT_KIND = 'prim::ListConstruct'
 LIST_UNPACK_KIND = 'prim::ListUnpack'
 TUPLE_CONSTRUCT_KIND = 'prim::TupleConstruct'
@@ -421,7 +421,7 @@ class TorchModuleGraph(TorchGraph):
             tensor.
         """
         # only suport the cat operation
-        assert cpp_node.kind() == CAT_KIND
+        assert cpp_node.kind() in CAT_KIND
         cat_info = {}
         # get the shape of the output tensor
         t_output = cpp_node.output()
@@ -772,7 +772,8 @@ class TorchModuleGraph(TorchGraph):
                 node_group.auxiliary = self._extract_shape_info(cpp_node)
             elif node_group.op_type == 'Linear':
                 node_group.auxiliary = self._extract_linear_shape_info(node_group)
-            elif node_group.op_type == CAT_KIND:
+            elif node_group.op_type in CAT_KIND:
+                node_group.op_type = 'aten::cat'
                 # get the detail information for cat func
                 cpp_node = list(filter(lambda x: x.kind() == node_group.op_type,
                                        node_group.node_cpps))[0]
