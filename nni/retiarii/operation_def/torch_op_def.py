@@ -159,7 +159,7 @@ class AtenNot(PyTorchOperation):
         return f'{output} = not {inputs[0]}'
 
 class AtenCat(PyTorchOperation):
-    _ori_type_name = ['aten::cat']
+    _ori_type_name = ['aten::cat', 'Concat']
     def to_forward_code(self, field: str, output: str, inputs: List[str], inputs_value: List[Any] = None) -> str:
         assert len(inputs) == 2
         return f'{output} = torch.cat({inputs[0]}, dim={inputs[1]})'
