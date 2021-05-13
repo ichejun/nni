@@ -6,8 +6,8 @@ schedules:
     include: [ master ]
 
 jobs:
-- job: adl
-  pool: NNI CI KUBE CLI
+- job: aml
+  pool: NNI CI REMOTE CLI
   timeoutInMinutes: 120
 
   steps:
@@ -40,9 +40,6 @@ jobs:
   - script: |
       set -e
       docker login -u nnidev -p $(docker_hub_password)
-      sed -i '$a RUN python3 -m pip install adaptdl tensorboard' Dockerfile
-      sed -i '$a COPY examples /examples' Dockerfile
-      sed -i '$a COPY test /test' Dockerfile
       echo '## Build docker image ##'
       docker build --build-arg NNI_RELEASE=${NNI_RELEASE} -t nnidev/nni-nightly .
       echo '## Upload docker image ##'
@@ -54,10 +51,13 @@ jobs:
       set -e
       cd test
       python3 nni_test/nnitest/generate_ts_config.py \
-          --ts adl \
-          --nni_docker_image nnidev/nni-nightly \
-          --checkpoint_storage_class $(checkpoint_storage_class) \
-          --checkpoint_storage_size $(checkpoint_storage_size) \
-          --nni_manager_ip $(nni_manager_ip)
-      python3 nni_test/nnitest/run_tests.py --config config/integration_tests.yml --ts adl --exclude multi-phase,multi-thread
+          --ts aml \
+          --subscription_id $(subscriptionId) \
+          --resource_group $(resourceGroup) \
+          --workspace_name $(workspaceName) \
+          --compute_target $(computeTarget) \
+          --nni_manager_ip $(manager_ip) \
+          --nni_docker_image nnidev/nni-nightly
+
+      python3 nni_test/nnitest/run_tests.py --config config/integration_tests.yml --ts aml
     displayName: Integration test
